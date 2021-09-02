@@ -14,6 +14,5 @@ public class Company {
     private String email;
     private List<String> has;
     private List<String> hasNot;
-    private List<String> missing;
     private int meet;
 }

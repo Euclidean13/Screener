@@ -57,18 +57,24 @@ public class InvestmentFacade implements CriteriaIncoming, CompanyIncoming {
     public String updateCompanyHaves(String name, String company, CompanyHaves companyHaves) {
         // Get user company details
         Company companyDetails = getUserCompanyDetails(name, company);
-        List<String> finalHaves = null;
-        List<String> finalHaveNot = null;
+        List<String> finalHaves = companyDetails.getHas();
+        List<String> finalHaveNot = companyDetails.getHasNot();
         // Compare existing with new ones
         if (!companyHaves.getHave().isEmpty()) {
             finalHaves = mergeListWithoutDuplicates(companyDetails.getHas(), companyHaves.getHave());
-            finalHaves.removeAll(companyHaves.getHaveNot());
-            finalHaves.removeAll(companyHaves.getMissing());
+            if (!companyDetails.getHasNot().isEmpty()) {
+                finalHaveNot.removeAll(companyHaves.getHave());
+            }
         }
         if (!companyHaves.getHaveNot().isEmpty()) {
             finalHaveNot = mergeListWithoutDuplicates(companyDetails.getHasNot(), companyHaves.getHaveNot());
-            finalHaveNot.removeAll(companyHaves.getHave());
+            if (!companyDetails.getHas().isEmpty()) {
+                finalHaves.removeAll(companyHaves.getHaveNot());
+            }
+        }
+        if (!companyHaves.getMissing().isEmpty()) {
             finalHaveNot.removeAll(companyHaves.getMissing());
+            finalHaves.removeAll(companyHaves.getMissing());
         }
         // Update company haves
         Company finalCompany = new Company(
