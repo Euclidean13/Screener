@@ -184,6 +184,37 @@ public class InvestmentAdapter implements CriteriaOutgoing, CompanyOutgoing {
 
     @Override
     public String updateCompanyHaves(String name, Company company) {
+        // Firestore does not allow to update an object inside in an array of a subfield
+        // So update the entire object (drawback)
+        Firestore dbFirestore = FirestoreClient.getFirestore();
+        DocumentReference documentReference = dbFirestore.collection(COLLECTION_NAME).document(name);
+        ApiFuture<DocumentSnapshot> future = documentReference.get();
+        ApiFuture<WriteResult> collectionsApiFuture;
+        DocumentSnapshot document;
+
+        try {
+            document = future.get();
+            if (document != null) {
+                if (document.exists()) {
+                    User userObj = document.toObject(User.class);
+                    if (userObj != null) {
+                        userObj.getCompanies().forEach((c) -> {
+                            if (c.getName().equals(company.getName())) {
+                                c.setName(company.getName());
+                                c.setEmail(company.getEmail());
+                                c.setHas(company.getHas());
+                                c.setHasNot(company.getHasNot());
+                                c.setMeet(company.getMeet());
+                            }
+                        });
+                        collectionsApiFuture = dbFirestore.collection(COLLECTION_NAME).document(name).set(userObj);
+                        return collectionsApiFuture.get().getUpdateTime().toString();
+                    }
+                }
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            logger.error(e.getMessage());
+        }
         return null;
     }
 }
