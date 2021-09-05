@@ -5,6 +5,8 @@ import com.foundernest.screener.domain.investment.core.model.Company;
 import java.util.List;
 
 public interface CompanyOutgoing {
+    String addUserCompany(String user, Company company);
+
     List<Company> getAllUserCompanies(String name);
 
     Company getUserCompanyDetails(String name, String company);

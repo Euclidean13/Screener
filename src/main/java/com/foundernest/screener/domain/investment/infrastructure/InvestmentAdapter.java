@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 
 @Service
@@ -102,6 +103,20 @@ public class InvestmentAdapter implements CriteriaOutgoing, CompanyOutgoing {
             }
         }
         return null;
+    }
+
+    @Override
+    public String addUserCompany(String user, Company company) {
+        Firestore dbFirestore = FirestoreClient.getFirestore();
+        DocumentReference documentReference = dbFirestore.collection(COLLECTION_NAME).document(user);
+        documentReference.update("companies", FieldValue.arrayUnion(company));
+        String resp = null;
+        try {
+            resp = Objects.requireNonNull(documentReference.get().get().getUpdateTime()).toString();
+        } catch (InterruptedException | ExecutionException e) {
+            logger.error(e.getMessage());
+        }
+        return resp;
     }
 
     @Override

@@ -57,4 +57,14 @@ public class InvestmentController {
         }
         return ResponseEntity.status(HttpStatus.OK).body(resp);
     }
+
+    @PostMapping("/addUserCompany")
+    public ResponseEntity<?> addUserCompany(@RequestParam String user, @RequestBody Company company) {
+        String resp = companyIncoming.addUserCompany(user, company);
+        if (resp == null) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unable to add user " + user +
+                    " company " + company);
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(resp);
+    }
 }

@@ -39,6 +39,11 @@ public class InvestmentFacade implements CriteriaIncoming, CompanyIncoming {
     }
 
     @Override
+    public String addUserCompany(String user, Company company) {
+        return companyOutgoing.addUserCompany(user, company);
+    }
+
+    @Override
     public List<Company> getAllUserCompanies(String name) {
         return companyOutgoing.getAllUserCompanies(name);
     }
