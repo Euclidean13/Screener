@@ -50,7 +50,7 @@ public class InvestmentController {
     public ResponseEntity<?> updateCompanyHaves(
             @RequestParam String name, @RequestParam String company, @RequestBody CompanyHaves companyHaves
     ) {
-        String resp = companyIncoming.updateCompanyHaves(name, company, companyHaves);
+        Company resp = companyIncoming.updateCompanyHaves(name, company, companyHaves);
         if (resp == null) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unable to update user " + name +
                     " company " + company + " haves");

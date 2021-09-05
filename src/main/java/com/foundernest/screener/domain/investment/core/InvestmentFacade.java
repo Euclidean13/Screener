@@ -59,7 +59,7 @@ public class InvestmentFacade implements CriteriaIncoming, CompanyIncoming {
     }
 
     @Override
-    public String updateCompanyHaves(String name, String company, CompanyHaves companyHaves) {
+    public Company updateCompanyHaves(String name, String company, CompanyHaves companyHaves) {
         // Get user company details
         Company companyDetails = getUserCompanyDetails(name, company);
         List<String> finalHaves = companyDetails.getHas();

@@ -13,5 +13,5 @@ public interface CompanyOutgoing {
 
     String makeADecision(String name, String company, int decision);
 
-    String updateCompanyHaves(String name, Company company);
+    Company updateCompanyHaves(String name, Company company);
 }
