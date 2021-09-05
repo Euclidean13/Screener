@@ -1,19 +1,38 @@
 package com.foundernest.screener.domain.investment.application;
 
+import com.foundernest.screener.domain.investment.core.model.Company;
 import com.foundernest.screener.domain.investment.core.model.CompanyHaves;
 import com.foundernest.screener.domain.investment.core.ports.incoming.CompanyIncoming;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 public class InvestmentController {
     @Autowired
     private CompanyIncoming companyIncoming;
+
+    @GetMapping("/userCompanies")
+    public ResponseEntity<?> getUserCompanies(@RequestParam String user) {
+        List<Company> resp = companyIncoming.getAllUserCompanies(user);
+        if (resp == null) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unable to get " + user + " companies");
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(resp);
+    }
+
+    @GetMapping("/userCompanyDetails")
+    public ResponseEntity<?> getUserCompanyDetails(@RequestParam String user, @RequestParam String company) {
+        Company resp = companyIncoming.getUserCompanyDetails(user, company);
+        if (resp == null) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Unable to get " + user + " " + company + " details");
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(resp);
+    }
 
     @PostMapping("/decision")
     public ResponseEntity<?> makeADecision(
