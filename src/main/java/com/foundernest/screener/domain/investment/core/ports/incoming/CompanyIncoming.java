@@ -2,6 +2,7 @@ package com.foundernest.screener.domain.investment.core.ports.incoming;
 
 import com.foundernest.screener.domain.investment.core.model.Company;
 import com.foundernest.screener.domain.investment.core.model.CompanyHaves;
+import com.foundernest.screener.domain.investment.core.model.Funnel;
 
 import java.util.List;
 
@@ -15,4 +16,6 @@ public interface CompanyIncoming {
     String makeADecision(String name, String company, int decision);
 
     Company updateCompanyHaves(String name, String company, CompanyHaves companyHaves);
+
+    List<Funnel> getUserCompaniesFunnel(String name);
 }

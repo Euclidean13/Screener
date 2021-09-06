@@ -232,4 +232,28 @@ public class InvestmentAdapter implements CriteriaOutgoing, CompanyOutgoing {
         }
         return null;
     }
+
+    @Override
+    public User getUserDetails(String name) {
+        Firestore dbFirestore = FirestoreClient.getFirestore();
+        DocumentReference documentReference = dbFirestore.collection(COLLECTION_NAME).document(name);
+        ApiFuture<DocumentSnapshot> future = documentReference.get();
+
+        DocumentSnapshot document = null;
+        User user;
+
+        try {
+            document = future.get();
+        } catch (InterruptedException | ExecutionException e) {
+            logger.error(e.getMessage());
+        }
+
+        if (document != null) {
+            if (document.exists()) {
+                user = document.toObject(User.class);
+                return user;
+            }
+        }
+        return null;
+    }
 }

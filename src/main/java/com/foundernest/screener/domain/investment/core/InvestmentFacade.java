@@ -1,8 +1,7 @@
 package com.foundernest.screener.domain.investment.core;
 
-import com.foundernest.screener.domain.investment.core.model.Company;
-import com.foundernest.screener.domain.investment.core.model.CompanyHaves;
-import com.foundernest.screener.domain.investment.core.model.Criteria;
+import com.foundernest.screener.domain.crud.core.ports.outgoing.UserOutgoing;
+import com.foundernest.screener.domain.investment.core.model.*;
 import com.foundernest.screener.domain.investment.core.ports.incoming.CompanyIncoming;
 import com.foundernest.screener.domain.investment.core.ports.incoming.CriteriaIncoming;
 import com.foundernest.screener.domain.investment.core.ports.outgoing.CompanyOutgoing;
@@ -10,10 +9,9 @@ import com.foundernest.screener.domain.investment.core.ports.outgoing.CriteriaOu
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class InvestmentFacade implements CriteriaIncoming, CompanyIncoming {
@@ -22,6 +20,9 @@ public class InvestmentFacade implements CriteriaIncoming, CompanyIncoming {
 
     @Autowired
     private CompanyOutgoing companyOutgoing;
+
+    @Autowired
+    private UserOutgoing userOutgoing;
 
     @Override
     public Criteria addUserCriteriaHave(String user, Criteria criteria) {
@@ -96,5 +97,76 @@ public class InvestmentFacade implements CriteriaIncoming, CompanyIncoming {
         Set<String> set = new LinkedHashSet<>(listOne);
         set.addAll(listTwo);
         return new ArrayList<>(set);
+    }
+
+    @Override
+    public List<Funnel> getUserCompaniesFunnel(String name) {
+        // Get user companies
+        User user = companyOutgoing.getUserDetails(name);
+
+        // Calculate companies funnel
+        return user.getCompanies().stream().map((company) -> new Funnel(
+                company.getName(),
+                company.getEmail(),
+                calculateMatchingScore(user.getCriteria(), company),
+                calculateWarnings(company.getHasNot().size(), user.getCriteria()),
+                calculateMissingInfo(user.getCriteria(), company),
+                calculateMustHavesMatchPercentage(user.getCriteria().getMustHave(), company.getHas()),
+                calculateSuperNiceToHaveMatchPercentage(user.getCriteria().getSuperNiceToHave(), company.getHas()),
+                calculateNiceToHaveMatchPercentage(user.getCriteria().getNiceToHave(), company.getHas()),
+                company.getMeet()
+        )).collect(Collectors.toList());
+    }
+
+    private int calculateMatchingScore(Criteria criteria, Company company) {
+        int mustHave = calculateMustHavesMatchPercentage(criteria.getMustHave(), company.getHas());
+        int superNiceToHave = calculateSuperNiceToHaveMatchPercentage(criteria.getSuperNiceToHave(), company.getHas());
+        int niceToHave = calculateNiceToHaveMatchPercentage(criteria.getNiceToHave(), company.getHas());
+        return (mustHave + superNiceToHave + niceToHave) / 3;
+    }
+
+    private int calculateMustHavesMatchPercentage(List<String> criteriaMustHave, List<String> companyMustHave) {
+        return findNumberCommonElements(criteriaMustHave, companyMustHave) / criteriaMustHave.size() * 100;
+    }
+
+    private int calculateSuperNiceToHaveMatchPercentage(
+            List<String> criteriaSuperNiceToHave, List<String> companySuperNiceToHave
+    ) {
+        return findNumberCommonElements(criteriaSuperNiceToHave, companySuperNiceToHave) / criteriaSuperNiceToHave.size() * 100;
+    }
+
+    private int calculateNiceToHaveMatchPercentage(List<String> criteriaNiceToHave, List<String> companyNiceToHave) {
+        return findNumberCommonElements(criteriaNiceToHave, companyNiceToHave) / criteriaNiceToHave.size() * 100;
+    }
+
+    private int calculateWarnings(int companyHasNot, Criteria criteria) {
+        List<String> criteriaElements = Stream.of(criteria.getMustHave(), criteria.getSuperNiceToHave(),
+                criteria.getNiceToHave()).flatMap(Collection::stream).collect(Collectors.toList());
+        return companyHasNot / criteriaElements.size() * 100;
+    }
+
+    private int calculateMissingInfo(Criteria criteria, Company company) {
+        List<String> criteriaElements = Stream.of(criteria.getMustHave(), criteria.getSuperNiceToHave(),
+                criteria.getNiceToHave()).flatMap(Collection::stream).collect(Collectors.toList());
+        List<String> companyElements = Stream.of(company.getHas(), company.getHasNot())
+                .flatMap(Collection::stream).collect(Collectors.toList());
+        int commonElements = findNumberCommonElements(criteriaElements, companyElements);
+        return (criteriaElements.size() - commonElements) / criteriaElements.size() * 100;
+    }
+
+    private int findNumberCommonElements(List<String> array1, List<String> array2) {
+        List<String> commonElements = new ArrayList<>();
+        for (String el1 : array1) {
+            for (String el2 : array2) {
+                if (el1.equals(el2)) {
+                    //Check if the list already contains the common element
+                    if (!commonElements.contains(el1)) {
+                        //add the common element into the list
+                        commonElements.add(el1);
+                    }
+                }
+            }
+        }
+        return commonElements.size();
     }
 }

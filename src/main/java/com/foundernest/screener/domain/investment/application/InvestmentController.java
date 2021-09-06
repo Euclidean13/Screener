@@ -2,6 +2,7 @@ package com.foundernest.screener.domain.investment.application;
 
 import com.foundernest.screener.domain.investment.core.model.Company;
 import com.foundernest.screener.domain.investment.core.model.CompanyHaves;
+import com.foundernest.screener.domain.investment.core.model.Funnel;
 import com.foundernest.screener.domain.investment.core.ports.incoming.CompanyIncoming;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -30,6 +31,16 @@ public class InvestmentController {
         if (resp == null) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Unable to get " + user + " " + company + " details");
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(resp);
+    }
+
+    @GetMapping("/getUserCompaniesFunnel")
+    public ResponseEntity<?> getUserCompaniesFunnel(@RequestParam String user) {
+        List<Funnel> resp = companyIncoming.getUserCompaniesFunnel(user);
+        if (resp == null) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Unable to get " + user + " companies funnel");
         }
         return ResponseEntity.status(HttpStatus.OK).body(resp);
     }
