@@ -118,43 +118,45 @@ public class InvestmentFacade implements CriteriaIncoming, CompanyIncoming {
         )).collect(Collectors.toList());
     }
 
-    private int calculateMatchingScore(Criteria criteria, Company company) {
-        int mustHave = calculateMustHavesMatchPercentage(criteria.getMustHave(), company.getHas());
-        int superNiceToHave = calculateSuperNiceToHaveMatchPercentage(criteria.getSuperNiceToHave(), company.getHas());
-        int niceToHave = calculateNiceToHaveMatchPercentage(criteria.getNiceToHave(), company.getHas());
-        return (mustHave + superNiceToHave + niceToHave) / 3;
+    public int calculateMatchingScore(Criteria criteria, Company company) {
+        int mustHave = findNumberCommonElements(criteria.getMustHave(), company.getHas());
+        int superNiceToHave = findNumberCommonElements(criteria.getSuperNiceToHave(), company.getHas());
+        int niceToHave = findNumberCommonElements(criteria.getNiceToHave(), company.getHas());
+        List<String> criteriaElements = Stream.of(criteria.getMustHave(), criteria.getSuperNiceToHave(),
+                criteria.getNiceToHave()).flatMap(Collection::stream).collect(Collectors.toList());
+        return (int) ((double) (mustHave + superNiceToHave + niceToHave) / criteriaElements.size() * 100);
     }
 
     private int calculateMustHavesMatchPercentage(List<String> criteriaMustHave, List<String> companyMustHave) {
-        return findNumberCommonElements(criteriaMustHave, companyMustHave) / criteriaMustHave.size() * 100;
+        return (int) ((double) findNumberCommonElements(criteriaMustHave, companyMustHave) / criteriaMustHave.size() * 100);
     }
 
     private int calculateSuperNiceToHaveMatchPercentage(
             List<String> criteriaSuperNiceToHave, List<String> companySuperNiceToHave
     ) {
-        return findNumberCommonElements(criteriaSuperNiceToHave, companySuperNiceToHave) / criteriaSuperNiceToHave.size() * 100;
+        return (int) ((double) findNumberCommonElements(criteriaSuperNiceToHave, companySuperNiceToHave) / criteriaSuperNiceToHave.size() * 100);
     }
 
     private int calculateNiceToHaveMatchPercentage(List<String> criteriaNiceToHave, List<String> companyNiceToHave) {
-        return findNumberCommonElements(criteriaNiceToHave, companyNiceToHave) / criteriaNiceToHave.size() * 100;
+        return (int) ((double) findNumberCommonElements(criteriaNiceToHave, companyNiceToHave) / criteriaNiceToHave.size() * 100);
     }
 
-    private int calculateWarnings(int companyHasNot, Criteria criteria) {
+    public int calculateWarnings(int companyHasNot, Criteria criteria) {
         List<String> criteriaElements = Stream.of(criteria.getMustHave(), criteria.getSuperNiceToHave(),
                 criteria.getNiceToHave()).flatMap(Collection::stream).collect(Collectors.toList());
-        return companyHasNot / criteriaElements.size() * 100;
+        return (int) ((double) companyHasNot / criteriaElements.size() * 100);
     }
 
-    private int calculateMissingInfo(Criteria criteria, Company company) {
+    public int calculateMissingInfo(Criteria criteria, Company company) {
         List<String> criteriaElements = Stream.of(criteria.getMustHave(), criteria.getSuperNiceToHave(),
                 criteria.getNiceToHave()).flatMap(Collection::stream).collect(Collectors.toList());
         List<String> companyElements = Stream.of(company.getHas(), company.getHasNot())
                 .flatMap(Collection::stream).collect(Collectors.toList());
         int commonElements = findNumberCommonElements(criteriaElements, companyElements);
-        return (criteriaElements.size() - commonElements) / criteriaElements.size() * 100;
+        return (int) (((double) criteriaElements.size() - (double) commonElements) / criteriaElements.size() * 100);
     }
 
-    private int findNumberCommonElements(List<String> array1, List<String> array2) {
+    public int findNumberCommonElements(List<String> array1, List<String> array2) {
         List<String> commonElements = new ArrayList<>();
         for (String el1 : array1) {
             for (String el2 : array2) {
