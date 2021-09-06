@@ -129,7 +129,7 @@ public class InvestmentFacadeTest {
                 Arrays.asList("Zombies", "employees"),
                 List.of("CTO"),
                 List.of("Boston"));
-        int warnPercentage = investmentFacade.calculateMatchingScore(criteria, company);
-        assertThat(warnPercentage).isEqualTo(50);
+        int matchingScore = investmentFacade.calculateMatchingScore(criteria, company);
+        assertThat(matchingScore).isEqualTo(50);
     }
 }
